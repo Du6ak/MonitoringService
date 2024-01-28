@@ -15,12 +15,24 @@ import static org.du6ak.services.out.menu.AdminMenu.*;
 import static org.du6ak.services.out.menu.MainMenu.showMainMenu;
 import static org.du6ak.services.out.menu.UserMenu.*;
 
+/**
+ * This class provides the main menu and user menu for the application.
+ */
 public class MenuService {
-    // Главное меню
+    /**
+     * This method displays the main menu and prompts the user to make a selection. The user can then choose
+     * from options such as registering, logging in, or exiting the program. If the user chooses to exit, the
+     * program will terminate. If the user chooses to register, they will be prompted to enter their username
+     * and password. If the user chooses to log in, they will be prompted to enter their username and password.
+     * If the user is successfully authenticated, they will be taken to the main menu. If the user enters an
+     * invalid option or provides invalid input, they will be prompted to try again.
+     *
+     * @throws Exception if there is an error while processing the user input
+     */
     public static void mainMenuChoice() throws Exception {
         try {
             switch (showMainMenu()) {
-                case 1 -> {                                      //"1. Регистрация"
+                case 1 -> { // "1. Register"
                     printStrings("Введите имя пользователя:");
                     String username = readString();
                     printStrings("Введите пароль:");
@@ -28,7 +40,7 @@ public class MenuService {
                     registration(username, password);
                     printStrings("Регистрация прошла успешно!");
                 }
-                case 2 -> {                              //"2. Авторизация"
+                case 2 -> { // "2. Login"
                     printStrings("Введите имя пользователя:");
                     String username = readString();
                     printStrings("Введите пароль:");
@@ -36,7 +48,7 @@ public class MenuService {
                     login(username, password);
                     printStrings("Авторизация прошла успешно!");
                 }
-                case 3 -> {                             //"3. Выйти из программы"
+                case 3 -> { // "3. Exit"
                     if (showExitConfirm() == 1) {
                         printStrings("Завершение программы...");
                         exit();
@@ -49,44 +61,57 @@ public class MenuService {
         }
         if (getCurrentUser() != null) {
             if (getCurrentUser().isAdmin()) {
-                adminMenuChoice(getCurrentUser());   // Меню админа
+                adminMenuChoice(getCurrentUser()); // Admin menu
             } else {
-                userMenuChoice(); // Меню пользователя
+                userMenuChoice(); // User menu
             }
         } else {
-            mainMenuChoice();  // Главное меню
+            mainMenuChoice(); // Main menu
         }
     }
 
-    // Меню пользователя
+    /**
+     * This method displays the user menu and prompts the user to make a selection. The user can then choose
+     * from options such as submitting meter readings, viewing their current and historical readings,
+     * changing their user account, or exiting the program. If the user chooses to exit, the program will
+     * terminate. If the user chooses to submit meter readings, they will be prompted to enter the reading
+     * value and type. If the user chooses to view their current readings, they will be shown their current
+     * readings for the selected meter. If the user chooses to view their historical readings, they will be
+     * shown their historical readings for the selected meter. If the user chooses to change their user
+     * account, they will be prompted to enter a new username and password. If the user is successfully
+     * authenticated, they will be taken to the main menu. If the user enters an invalid option or provides
+     * invalid input, they will be prompted to try again.
+     *
+     * @throws Exception if there is an error while processing the user input
+     */
     public static void userMenuChoice() throws Exception {
         try {
             switch (showUserMenu()) {
-                case 1 -> {                                                 //"1. Внести показания"
+                case 1 -> { // "1. Submit meter reading"
                     sendReadings(getCurrentUser());
                     printStrings("Показание со счетчика успешно отправлено!");
                 }
-                case 2 -> {                                                 //"2. Посмотреть актуальные(последние) показания"
+                case 2 -> { // "2. View current readings"
                     var latestReading = getActualReadings(getCurrentUser());
                     printStrings("Ваши актуальные показания (" + latestReading.getType() + "):\n");
                     printReadings(List.of(latestReading));
                 }
-                case 3 -> {                                                 //"3. Посмотреть показания за конкретный месяц"
+                case 3 -> { // "3. View readings by month"
                     var readingByMonth = getMonthReadings(getCurrentUser());
                     printStrings("Ваши показания за " + (readingByMonth.get(0).getMonth() - 1));
                     printReadings(readingByMonth);
                 }
-                case 4 -> {                                                 //"4. Посмотреть свою историю подачи показаний"
+                case 4 -> { // "4. View reading history"
                     var readings = getHistoryReadings(getCurrentUser());
                     printStrings("Ваша история подачи показаний:");
                     printReadings(readings);
                 }
-                case 5 -> {                                                 //"5. Сменить пользователя"
+                case 5 -> { // "5. Change user"
                     if (showLogoutConfirm() == 1) {
                         logout();
                     }
                 }
-                case 6 -> {                                                 //"6. Выйти из программы"
+                case 6 -> { // "6. Exit"
                     if (showExitConfirm() == 1) {
                         printStrings("Завершение программы...");
                         exit();
@@ -98,22 +123,39 @@ public class MenuService {
             printErrors(e.getMessage());
         }
         if (getCurrentUser() == null) {
-            mainMenuChoice();  // Главное меню
+            mainMenuChoice(); // Main menu
         } else {
             if (isAdmin(getCurrentUser())) {
-                adminMenuChoice(getCurrentUser());   // Меню админа
+                adminMenuChoice(getCurrentUser()); // Admin menu
             } else {
-                userMenuChoice(); // Меню пользователя
+                userMenuChoice(); // User menu
             }
         }
     }
 
-    // Меню админа
+    /**
+     * This method displays the admin menu and prompts the user to make a selection. The user can then choose
+     * from options such as submitting meter readings, viewing all current and historical readings,
+     * viewing a specific user's readings, viewing the system logs, extending the list of meter types, or
+     * exiting the program. If the user chooses to exit, the program will terminate. If the user chooses to
+     * submit meter readings, they will be prompted to enter the reading value and type. If the user chooses
+     * to view all current readings, they will be shown all current readings for all registered users. If
+     * the user chooses to view a specific user's readings, they will be prompted to enter the username and
+     * be shown that user's current and historical readings. If the user chooses to view the system logs,
+     * they will be shown the system logs for all registered users. If the user chooses to extend the list of
+     * meter types, they will be prompted to enter a new meter type. If the user chooses to edit the list of
+     * meter types, they will be prompted to enter a meter type and be prompted to confirm the deletion. If
+     * the user is successfully authenticated, they will be taken to the main menu. If the user enters an
+     * invalid option or provides invalid input, they will be prompted to try again.
+     *
+     * @param currentUser the currently authenticated user
+     * @throws Exception if there is an error while processing the user input
+     */
     public static void adminMenuChoice(User currentUser) throws Exception {
         try {
             switch (showAdminMenu()) {
-                case 1 -> sendReadings(currentUser);         //"1. Внести показания"
-                case 2 -> {                                 //"2. Посмотреть актуальные(последние) показания"
+                case 1 -> sendReadings(currentUser); // "1. Submit meter reading"
+                case 2 -> { // "2. View all current readings"
                     int result = showReadingsChoice();
                     if (result == 1) {
                         var actualReadings = getActualReadings(getCurrentUser());
@@ -125,7 +167,7 @@ public class MenuService {
                         printReadings(List.of(actualReadings));
                     }
                 }
-                case 3 -> {                                 //"3. Посмотреть показания за конкретный месяц"
+                case 3 -> { // "3. View readings by month"
                     int result = showReadingsChoice();
                     if (result == 1) {
                         var readingByMonth = getMonthReadings(getCurrentUser());
@@ -137,7 +179,7 @@ public class MenuService {
                         printReadings(readingByMonth);
                     }
                 }
-                case 4 -> {                                 //"4. Посмотреть историю подачи показаний"
+                case 4 -> { // "4. View reading history"
                     int result = showReadingsChoice();
                     if (result == 1) {
                         var readings = getHistoryReadings(getCurrentUser());
@@ -149,12 +191,12 @@ public class MenuService {
                         printReadings(readings);
                     }
                 }
-                case 5 -> {                                 //"5. Посмотреть лог пользователя"
+                case 5 -> { // "5. View user logs"
                     var logs = getUserLog(isRegistered(getTargetUsername()));
                     printStrings("Лог пользователя:");
                     printLogs(logs);
                 }
-                case 6 -> {                                 //"6. Расширить перечень показаний"
+                case 6 -> { // "6. Extend meter types"
                     int result = showReadingsEdit();
                     if (result == 1) {
                         printStrings("Введите новый тип счетчика:");
@@ -164,12 +206,12 @@ public class MenuService {
                         deleteReadingType(getTypeOfReading());
                     }
                 }
-                case 7 -> {                                 //"7. Сменить пользователя"
+                case 7 -> { // "7. Change user"
                     if (showLogoutConfirm() == 1) {
                         logout();
                     }
                 }
-                case 8 -> {                                 //"8. Выход из программы"
+                case 8 -> { // "8. Exit"
                     if (showExitConfirm() == 1) {
                         printStrings("Завершение программы...");
                         exit();
@@ -181,12 +223,12 @@ public class MenuService {
             printErrors(e.getMessage());
         }
         if (getCurrentUser() == null) {
-            mainMenuChoice();  // Главное меню
+            mainMenuChoice(); // Main menu
         } else {
             if (isAdmin(getCurrentUser())) {
-                adminMenuChoice(getCurrentUser());   // Меню админа
+                adminMenuChoice(getCurrentUser()); // Admin menu
             } else {
-                userMenuChoice(); // Меню пользователя
+                userMenuChoice(); // User menu
             }
         }
     }

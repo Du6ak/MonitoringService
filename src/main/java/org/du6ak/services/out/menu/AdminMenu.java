@@ -6,7 +6,17 @@ import static org.du6ak.services.in.ConsoleReaderService.readInt;
 import static org.du6ak.services.in.ConsoleReaderService.readString;
 import static org.du6ak.services.out.ConsoleWriterService.printStrings;
 
+/**
+ * Provides methods for interacting with the user through the console.
+ */
 public class AdminMenu {
+
+    /**
+     * Displays the main menu for the administrator.
+     *
+     * @return the user's choice as an integer
+     * @throws WrongOperationException if the user enters an invalid choice
+     */
     public static int showAdminMenu() throws WrongOperationException {
         printStrings(
                 "Выберите действие (введите номер операции от 1 до 8):",
@@ -22,6 +32,12 @@ public class AdminMenu {
         return readInt();
     }
 
+    /**
+     * Asks the user whether they want to view their own readings or another user's readings.
+     *
+     * @return the user's choice as an integer
+     * @throws WrongOperationException if the user enters an invalid choice
+     */
     public static int showReadingsChoice() throws WrongOperationException {
         printStrings(
                 "Вы хотите посмотреть свои показания?",
@@ -30,6 +46,13 @@ public class AdminMenu {
         );
         return readInt();
     }
+
+    /**
+     * Asks the user whether they want to edit the list of supported readings.
+     *
+     * @return the user's choice as an integer
+     * @throws WrongOperationException if the user enters an invalid choice
+     */
     public static int showReadingsEdit() throws WrongOperationException {
         printStrings(
                 "Редактирование перечня подаваемых показаний",
@@ -39,6 +62,11 @@ public class AdminMenu {
         return readInt();
     }
 
+    /**
+     * Prompts the user to enter a username and returns it.
+     *
+     * @return the username entered by the user
+     */
     public static String getTargetUsername() {
         printStrings("Введите имя пользователя:");
         return readString();

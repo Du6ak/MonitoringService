@@ -8,27 +8,62 @@ import org.du6ak.models.User;
 import java.util.*;
 
 import static org.du6ak.services.LogService.*;
-import static org.du6ak.services.out.menu.UserMenu.*;
 
+/**
+ * This class provides services for managing users.
+ */
 @Data
 public class UserService {
-    private static final HashMap<User, Set<Reading>> users = new HashMap<>();   //список пользователей
-    private static final List<String> ROLES = List.of("admin", "administrator", "админ", "администратор"); // Список ролей
-    private static User currentUser;    // Текущий пользователь (авторизованный)
 
+    /**
+     * A map of users, where the key is the user and the value is a set of readings that the user has access to.
+     */
+    private static final HashMap<User, Set<Reading>> users = new HashMap<>();
+
+    /**
+     * A list of roles that are considered to be administrative.
+     */
+    private static final List<String> ROLES = List.of("admin", "administrator", "админ", "администратор");
+
+    /**
+     * The currently logged in user.
+     */
+    private static User currentUser;
+
+    /**
+     * Returns a map of all users and their readings.
+     *
+     * @return a map of users and their readings
+     */
     public static Map<User, Set<Reading>> getUsers() {
         return users;
     }
 
+    /**
+     * Returns the currently logged in user.
+     *
+     * @return the currently logged in user
+     */
     public static User getCurrentUser() {
         return currentUser;
     }
 
+    /**
+     * Sets the currently logged in user.
+     *
+     * @param newUser the new user to log in
+     */
     public static void setCurrentUser(User newUser) {
         UserService.currentUser = newUser;
     }
 
-    // Регистрация пользователя
+    /**
+     * Registers a new user.
+     *
+     * @param username the username of the new user
+     * @param password the password of the new user
+     * @throws Exception if the user is already registered or there is an error registering the user
+     */
     public static void registration(String username, String password) throws Exception {
         if (currentUser != null) {
             throw new Exception("Невозможно зарегистрироваться!\nВы уже авторизованы как " + currentUser.getUsername() + "!");
@@ -37,11 +72,17 @@ public class UserService {
         if (users.keySet().stream().anyMatch(user -> user.getUsername().equalsIgnoreCase(username))) {
             throw new Exception("Такой пользователь уже зарегистрирован!\nПопробуйте еще раз");
         }
-        users.put(newUser, new HashSet<>());                           // Регистрируем пользователя
-        addLog(newUser, new Log("зарегистрировался"));   // Записываем лог
+        users.put(newUser, new HashSet<>());
+        addLog(newUser, new Log("зарегистрировался"));
     }
 
-    // Авторизация пользователя
+    /**
+     * Logs in an existing user.
+     *
+     * @param username the username of the user
+     * @param password the password of the user
+     * @throws Exception if the user is not registered or the password is incorrect
+     */
     public static void login(String username, String password) throws Exception {
         if (currentUser != null) {
             throw new Exception("Вы уже авторизованы!");
@@ -51,24 +92,35 @@ public class UserService {
         }
         currentUser = users.keySet().stream().filter(user -> user.getUsername().equalsIgnoreCase(username) && user.getPassword().equals(password)).findFirst()
                 .orElseThrow(() -> new Exception("Неправильный логин или пароль!\nПопробуйте еще раз"));
-        addLog(currentUser, new Log("авторизировался"));// Записываем лог
+        addLog(currentUser, new Log("авторизировался"));
     }
 
-    // Выход из учетной записи
+    /**
+     * Logs out the currently logged in user.
+     *
+     * @throws Exception if the user is not logged in
+     */
     public static void logout() throws Exception {
         if (currentUser == null) {
             throw new Exception("Вы не авторизованы!");
         }
-        addLog(currentUser, new Log("вышел из учетной записи")); // Записываем лог
-        setCurrentUser(null); // Обнуляем авторизированного пользователя
+        addLog(currentUser, new Log("вышел из учетной записи"));
+        setCurrentUser(null);
     }
 
-    // Проверка на регистрацию
+    /**
+     * Checks if a user is registered.
+     *
+     * @param targetUsername the username of the user to check
+     * @return the user if they are registered, or null if they are not registered
+     */
     public static User isRegistered(String targetUsername) {
         return users.keySet().stream().filter(user -> user.getUsername().equalsIgnoreCase(targetUsername)).findFirst().orElse(null);
     }
 
-    // Выход из программы
+    /**
+     * Exits the program.
+     */
     public static void exit() {
         System.exit(1);
     }

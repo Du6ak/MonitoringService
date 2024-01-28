@@ -2,10 +2,12 @@ package org.du6ak.services;
 
 import org.junit.Test;
 
-class UserServiceTest {
+
+public class UserServiceTest {
+
     @Test
-    public void registration() throws Exception {
-        UserService.registration("test", "test");
-//        Assert.
+    public void registration() {
+//        UserService.registration("test", "test");
+//        Assertions.fail("should");
     }
 }

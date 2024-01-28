@@ -5,8 +5,17 @@ import org.du6ak.services.exceptions.WrongOperationException;
 import static org.du6ak.services.in.ConsoleReaderService.readInt;
 import static org.du6ak.services.out.ConsoleWriterService.printStrings;
 
+/**
+ * Provides methods for interacting with the user through the console.
+ */
 public class UserMenu {
 
+    /**
+     * Displays the user menu and returns the user's selection.
+     *
+     * @return the user's selection
+     * @throws WrongOperationException if the user enters an invalid option
+     */
     public static int showUserMenu() throws WrongOperationException {
         printStrings(
                 "Выберите действие (введите номер операции от 1 до 6):",
@@ -20,6 +29,12 @@ public class UserMenu {
         return readInt();
     }
 
+    /**
+     * Displays the logout confirmation prompt and returns the user's selection.
+     *
+     * @return the user's selection
+     * @throws WrongOperationException if the user enters an invalid option
+     */
     public static int showLogoutConfirm() throws WrongOperationException {
         printStrings(
                 "Вы действительно хотите сменить пользователя?",
@@ -33,6 +48,12 @@ public class UserMenu {
         return value;
     }
 
+    /**
+     * Displays the exit confirmation prompt and returns the user's selection.
+     *
+     * @return the user's selection
+     * @throws WrongOperationException if the user enters an invalid option
+     */
     public static int showExitConfirm() throws WrongOperationException {
         printStrings(
                 "Вы действительно хотите закрыть программу?",

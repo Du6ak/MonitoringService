@@ -1,21 +1,41 @@
 package org.du6ak.models;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-import java.time.Month;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
+/**
+ * A class that represents a reading from a meter.
+ */
 @Data
-public class Reading{
-//    private static List<String> readingTypes = new ArrayList<>(Arrays.asList("холодная вода", "горячая вода", "электричество"));//список типов
-    private String type; // тип счетчика (отопление, горячая вода, холодная вода)
-    private Long contractNumber; // номер договора
-    private int value; // показание счетчика
-    private int month; // дата подачи показаний
+public class Reading {
 
+    /**
+     * The type of meter (heating, hot water, cold water).
+     */
+    private String type;
+
+    /**
+     * The contract number associated with the meter.
+     */
+    private Long contractNumber;
+
+    /**
+     * The meter reading.
+     */
+    private int value;
+
+    /**
+     * The month the reading was taken.
+     */
+    private int month;
+
+    /**
+     * Creates a new Reading object.
+     *
+     * @param type           The type of meter (heating, hot water, cold water).
+     * @param contractNumber The contract number associated with the meter.
+     * @param value          The meter reading.
+     * @param month          The month the reading was taken.
+     */
     public Reading(String type, Long contractNumber, int value, int month) {
         this.type = type;
         this.contractNumber = contractNumber;
