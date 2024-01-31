@@ -2,14 +2,13 @@ package org.du6ak.services;
 
 import org.du6ak.models.Log;
 import org.du6ak.models.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LogServiceTest {
     private static final String USERNAME = "testUser";

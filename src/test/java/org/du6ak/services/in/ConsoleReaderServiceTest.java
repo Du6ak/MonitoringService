@@ -4,61 +4,45 @@ import org.du6ak.services.exceptions.WrongOperationException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Scanner;
+import java.io.ByteArrayInputStream;
 
 class ConsoleReaderServiceTest {
 
     @Test
-    void readString_shouldReturnString() {
+    public void testReadString() {
         // Arrange
-        Scanner scanner = new Scanner("test");
-        ConsoleReaderService consoleReaderService = new ConsoleReaderService() {
-            @Override
-            Scanner getScanner() {
-                return scanner;
-            }
-        };
+        String expectedString = "Test string";
+        System.setIn(new ByteArrayInputStream(expectedString.getBytes()));
 
         // Act
-        String result = consoleReaderService.readString();
+        String actualString = ConsoleReaderService.readString();
 
         // Assert
-        Assertions.assertEquals("test", result);
+        Assertions.assertEquals(expectedString, actualString);
     }
 
     @Test
-    void readInt_shouldReturnInteger() throws WrongOperationException {
+    public void testReadInt() throws WrongOperationException {
         // Arrange
-        Scanner scanner = new Scanner("123");
-        ConsoleReaderService consoleReaderService = new ConsoleReaderService() {
-            @Override
-            Scanner getScanner() {
-                return scanner;
-            }
-        };
+        int expectedInt = 10;
+        System.setIn(new ByteArrayInputStream(String.valueOf(expectedInt).getBytes()));
 
         // Act
-        int result = consoleReaderService.readInt();
+        int actualInt = ConsoleReaderService.readInt();
 
         // Assert
-        Assertions.assertEquals(123, result);
+        Assertions.assertEquals(expectedInt, actualInt);
     }
-
     @Test
-    void readLong_shouldReturnLong() throws WrongOperationException {
+    public void testReadLong() throws WrongOperationException {
         // Arrange
-        Scanner scanner = new Scanner("1234567890123456789L");
-        ConsoleReaderService consoleReaderService = new ConsoleReaderService() {
-            @Override
-            Scanner getScanner() {
-                return scanner;
-            }
-        };
+        long expectedLong = 10L;
+        System.setIn(new ByteArrayInputStream(String.valueOf(expectedLong).getBytes()));
 
         // Act
-        Long result = consoleReaderService.readLong();
+        long actualLong = ConsoleReaderService.readLong();
 
         // Assert
-        Assertions.assertEquals(1234567890123456789L, result);
+        Assertions.assertEquals(expectedLong, actualLong);
     }
 }

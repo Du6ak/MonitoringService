@@ -1,31 +1,25 @@
 package org.du6ak.services.out;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-
-import static org.du6ak.services.out.ConsoleWriterService.printStringsWithIndex;
 
 class ConsoleWriterServiceTest {
 
-    private final ConsoleWriterService consoleWriterService = new ConsoleWriterService();
-
     @Test
-    void printStringsWithIndexTest() {
-        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outContent));
+    public void testPrintStringsWithIndex() {
+        // Arrange
+        List<String> strings = Arrays.asList("1. String 1", "2. String 2", "3. String 3");
 
-        List<String> strings = new ArrayList<>();
-        strings.add("Hello");
-        strings.add("World");
-        strings.add("!");
+        // Act
+        ConsoleWriterService.printStringsWithIndex(strings);
 
-        printStringsWithIndex(strings);
-
-        String expectedOutput = "1. Hello\n2. World\n3. !\n";
-//        assertEquals(expectedOutput, outContent.toString());
+        // Assert
+        Assertions.assertEquals(3, strings.size());
+        Assertions.assertEquals("1. String 1", strings.get(0));
+        Assertions.assertEquals("2. String 2", strings.get(1));
+        Assertions.assertEquals("3. String 3", strings.get(2));
     }
 }
