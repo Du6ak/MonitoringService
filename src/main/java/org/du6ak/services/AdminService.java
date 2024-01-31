@@ -24,7 +24,7 @@ public class AdminService {
             throw new Exception("Пользователь не найден!");
         }
         Queue<Log> userLogs = LogService.getUsersLogs().get(targetUser);
-        if (userLogs.isEmpty()) {
+        if (userLogs == null) {
             throw new Exception("В базе нет логов!");
         }
         return userLogs;

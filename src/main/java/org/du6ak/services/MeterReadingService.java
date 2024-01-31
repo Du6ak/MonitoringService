@@ -8,8 +8,8 @@ import org.du6ak.models.User;
 import java.util.*;
 
 import static org.du6ak.services.LogService.addLog;
+import static org.du6ak.services.UserService.getUsers;
 import static org.du6ak.services.out.menu.ReadingMenu.*;
-import static org.du6ak.services.UserService.*;
 
 /**
  * This class provides services for managing meter readings.
@@ -19,7 +19,13 @@ public class MeterReadingService {
     /**
      * A list of supported meter reading types.
      */
-    private static List<String> readingTypes = List.of("холодная вода", "горячая вода", "электричество");
+    private static List<String> readingTypes = new ArrayList<>();
+
+    static {
+        readingTypes.add("холодная вода");
+        readingTypes.add("горячая вода");
+        readingTypes.add("электричество");
+    }
 
     /**
      * A list of month names.

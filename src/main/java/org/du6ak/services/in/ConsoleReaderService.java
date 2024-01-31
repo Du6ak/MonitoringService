@@ -8,7 +8,7 @@ import java.util.Scanner;
 /**
  * This class provides static methods for reading input from the console.
  */
-public class ConsoleReaderService {
+public abstract class ConsoleReaderService {
 
     /**
      * Reads a string from the console.
@@ -46,4 +46,6 @@ public class ConsoleReaderService {
             throw new WrongOperationException();
         }
     }
+
+    abstract Scanner getScanner();
 }

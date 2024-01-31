@@ -1,23 +1,64 @@
 package org.du6ak.services.in;
 
-import org.junit.Test;
+import org.du6ak.services.exceptions.WrongOperationException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+import java.util.Scanner;
 
-public class ConsoleReaderServiceTest {
+class ConsoleReaderServiceTest {
+
     @Test
-    public void read_Int() throws Exception {
-        System.out.println("Введите число:");
-        int expected = readNumber();
-        int actual = ConsoleReaderService.readInt();
+    void readString_shouldReturnString() {
+        // Arrange
+        Scanner scanner = new Scanner("test");
+        ConsoleReaderService consoleReaderService = new ConsoleReaderService() {
+            @Override
+            Scanner getScanner() {
+                return scanner;
+            }
+        };
 
-        Assertions.assertEquals(expected, actual);
+        // Act
+        String result = consoleReaderService.readString();
+
+        // Assert
+        Assertions.assertEquals("test", result);
     }
 
-    private static int readNumber() {
-//        Scanner scanner = new Scanner(System.in);
-//        return scanner.nextInt();
-        return -1;
+    @Test
+    void readInt_shouldReturnInteger() throws WrongOperationException {
+        // Arrange
+        Scanner scanner = new Scanner("123");
+        ConsoleReaderService consoleReaderService = new ConsoleReaderService() {
+            @Override
+            Scanner getScanner() {
+                return scanner;
+            }
+        };
+
+        // Act
+        int result = consoleReaderService.readInt();
+
+        // Assert
+        Assertions.assertEquals(123, result);
     }
 
+    @Test
+    void readLong_shouldReturnLong() throws WrongOperationException {
+        // Arrange
+        Scanner scanner = new Scanner("1234567890123456789L");
+        ConsoleReaderService consoleReaderService = new ConsoleReaderService() {
+            @Override
+            Scanner getScanner() {
+                return scanner;
+            }
+        };
+
+        // Act
+        Long result = consoleReaderService.readLong();
+
+        // Assert
+        Assertions.assertEquals(1234567890123456789L, result);
+    }
 }
