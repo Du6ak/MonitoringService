@@ -2,16 +2,27 @@ package org.du6ak.services.out;
 
 import org.du6ak.models.Log;
 import org.du6ak.models.Reading;
+import org.du6ak.repositories.Roles;
+import org.du6ak.services.exceptions.IncorrectDataException;
+import org.du6ak.services.exceptions.WrongOperationException;
+import org.du6ak.services.in.ConsoleReaderService;
 
 import java.util.List;
 import java.util.Queue;
 
-import static org.du6ak.services.MeterReadingService.MONTHS;
 
 /**
  * A utility class for writing to the console.
  */
 public class ConsoleWriterService {
+
+    private static final ConsoleWriterService INSTANCE = new ConsoleWriterService();
+
+    public static ConsoleWriterService getInstance() {
+        return INSTANCE;
+    }
+
+    private final ConsoleReaderService consoleReaderService = ConsoleReaderService.getInstance();
 
     /**
      * The ANSI escape code for red text.
@@ -28,7 +39,7 @@ public class ConsoleWriterService {
      *
      * @param strings the strings to print
      */
-    public static void printStrings(String... strings) {
+    public void printStrings(String... strings) {
         if (strings.length == 0) {
             return;
         }
@@ -42,13 +53,13 @@ public class ConsoleWriterService {
      *
      * @param readings the readings to print
      */
-    public static void printReadings(List<Reading> readings) {
+    public void printReadings(List<Reading> readings) {
         for (var reading : readings) {
             printStrings(
                     "Счетчик: " + reading.getType() +
                             "\nНомер договора: " + reading.getContractNumber() +
                             "\nЗначение счетчика: " + reading.getValue() +
-                            "\nМесяц подачи: " + MONTHS.get(reading.getMonth() - 1) + " (" + reading.getMonth() + ")\n"
+                            "\nМесяц подачи: " + reading.getMonth() + " (" + reading.getMonth().ordinal() + ")\n"
             );
         }
     }
@@ -58,7 +69,7 @@ public class ConsoleWriterService {
      *
      * @param logs the logs to print
      */
-    public static void printLogs(Queue<Log> logs) {
+    public void printLogs(Queue<Log> logs) {
         for (var log : logs) {
             printStrings(log.getDate() + " " + log.getAction());
         }
@@ -69,7 +80,7 @@ public class ConsoleWriterService {
      *
      * @param strings the errors to print
      */
-    public static void printErrors(String... strings) {
+    public void printErrors(String... strings) {
         if (strings.length == 0) {
             return;
         }
@@ -83,12 +94,24 @@ public class ConsoleWriterService {
      *
      * @param strings the strings to print
      */
-    public static void printStringsWithIndex(List<String> strings) {
+    public void printStringsWithIndex(List<String> strings) throws IncorrectDataException {
         if (strings.isEmpty()) {
-            return;
+            throw new IncorrectDataException();
         }
         for (int i = 0; i < strings.size(); i++) {
             System.out.println((i + 1) + ". " + strings.get(i));
         }
     }
+
+    public Roles printRolesWithIndex(List<Roles> roles) throws WrongOperationException {
+        for (int i = 1; i <= roles.size(); i++) {
+            printStrings(i + ". " + roles.get(i - 1));
+        }
+        int choice = consoleReaderService.readInt();
+        if (choice < 1 || choice > roles.size()+1) {
+            throw new WrongOperationException();
+        }
+        return roles.get(choice - 1);
+    }
+
 }

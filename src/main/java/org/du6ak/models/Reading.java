@@ -2,6 +2,8 @@ package org.du6ak.models;
 
 import lombok.Data;
 
+import java.time.Month;
+
 /**
  * A class that represents a reading from a meter.
  */
@@ -26,7 +28,7 @@ public class Reading {
     /**
      * The month the reading was taken.
      */
-    private int month;
+    private Month month;
 
     /**
      * Creates a new Reading object.
@@ -36,7 +38,7 @@ public class Reading {
      * @param value          The meter reading.
      * @param month          The month the reading was taken.
      */
-    public Reading(String type, Long contractNumber, int value, int month) {
+    public Reading(String type, Long contractNumber, int value, Month month) {
         this.type = type;
         this.contractNumber = contractNumber;
         this.value = value;

@@ -1,15 +1,20 @@
 package org.du6ak.services.out.menu;
 
 import org.du6ak.services.exceptions.WrongOperationException;
-
-import static org.du6ak.services.in.ConsoleReaderService.readInt;
-import static org.du6ak.services.in.ConsoleReaderService.readString;
-import static org.du6ak.services.out.ConsoleWriterService.printStrings;
+import org.du6ak.services.in.ConsoleReaderService;
+import org.du6ak.services.out.ConsoleWriterService;
 
 /**
  * Provides methods for interacting with the user through the console.
  */
 public class AdminMenu {
+
+    private static final AdminMenu INSTANCE = new AdminMenu();
+    public static AdminMenu getInstance() {
+        return INSTANCE;
+    }
+    private final ConsoleReaderService consoleReaderService = ConsoleReaderService.getInstance();
+    private final ConsoleWriterService consoleWriterService = ConsoleWriterService.getInstance();
 
     /**
      * Displays the main menu for the administrator.
@@ -17,8 +22,8 @@ public class AdminMenu {
      * @return the user's choice as an integer
      * @throws WrongOperationException if the user enters an invalid choice
      */
-    public static int showAdminMenu() throws WrongOperationException {
-        printStrings(
+    public int showAdminMenu() throws WrongOperationException {
+        consoleWriterService.printStrings(
                 "Выберите действие (введите номер операции от 1 до 8):",
                 "1. Внести показания",
                 "2. Посмотреть актуальные(последние) показания",
@@ -29,7 +34,7 @@ public class AdminMenu {
                 "7. Сменить пользователя",
                 "8. Выход из программы"
         );
-        return readInt();
+        return consoleReaderService.readInt();
     }
 
     /**
@@ -38,13 +43,17 @@ public class AdminMenu {
      * @return the user's choice as an integer
      * @throws WrongOperationException if the user enters an invalid choice
      */
-    public static int showReadingsChoice() throws WrongOperationException {
-        printStrings(
+    public int showReadingsChoice() throws WrongOperationException {
+        consoleWriterService.printStrings(
                 "Вы хотите посмотреть свои показания?",
                 "1. Мои показания",
                 "2. Показания пользователя"
         );
-        return readInt();
+        int value = consoleReaderService.readInt();
+        if (value != 1 && value != 2) {
+            throw new WrongOperationException();
+        }
+        return value;
     }
 
     /**
@@ -53,13 +62,17 @@ public class AdminMenu {
      * @return the user's choice as an integer
      * @throws WrongOperationException if the user enters an invalid choice
      */
-    public static int showReadingsEdit() throws WrongOperationException {
-        printStrings(
+    public int showReadingsEdit() throws WrongOperationException {
+        consoleWriterService.printStrings(
                 "Редактирование перечня подаваемых показаний",
-                "1. Добавить новый тип счетчика",
-                "2. Удалить тип счетчика"
+                "1. Добавить новый счетчик",
+                "2. Удалить счетчик"
         );
-        return readInt();
+        int value = consoleReaderService.readInt();
+        if (value != 1 && value != 2) {
+            throw new WrongOperationException();
+        }
+        return value;
     }
 
     /**
@@ -67,8 +80,8 @@ public class AdminMenu {
      *
      * @return the username entered by the user
      */
-    public static String getTargetUsername() {
-        printStrings("Введите имя пользователя:");
-        return readString();
+    public String getTargetUsername() {
+        consoleWriterService.printStrings("Введите имя пользователя:");
+        return consoleReaderService.readString();
     }
 }

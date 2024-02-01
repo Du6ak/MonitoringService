@@ -1,6 +1,7 @@
 package org.du6ak.models;
 
 import lombok.Data;
+import org.du6ak.repositories.Roles;
 
 /**
  * A class that represents a user in the system.
@@ -21,31 +22,18 @@ public class User {
     /**
      * A flag indicating whether the user is an administrator.
      */
-    private boolean isAdmin;
+    private Roles role;
 
     /**
-     * Creates a new user with the specified username and password.
-     * The user is not an administrator by default.
+     * A constructor that initializes the user object with the given username, password, and role.
      *
      * @param username the username of the user
      * @param password the password of the user
+     * @param role     the role of the user
      */
-    public User(String username, String password) {
+    public User(String username, String password, Roles role) {
         this.username = username;
         this.password = password;
-        this.isAdmin = false;
-    }
-
-    /**
-     * Creates a new user with the specified username, password, and administrator status.
-     *
-     * @param username the username of the user
-     * @param password the password of the user
-     * @param isAdmin  a flag indicating whether the user is an administrator
-     */
-    public User(String username, String password, boolean isAdmin) {
-        this.username = username;
-        this.password = password;
-        this.isAdmin = isAdmin;
+        this.role = role;
     }
 }

@@ -1,60 +1,39 @@
 package org.du6ak.services;
 
 import lombok.Data;
-import org.du6ak.models.Log;
-import org.du6ak.models.Reading;
 import org.du6ak.models.User;
-
-import java.util.*;
-
-import static org.du6ak.services.LogService.*;
+import org.du6ak.repositories.Logs;
+import org.du6ak.repositories.Roles;
+import org.du6ak.repositories.Users;
+import org.du6ak.services.exceptions.*;
 
 /**
  * This class provides services for managing users.
  */
 @Data
 public class UserService {
+    private static final UserService INSTANCE = new UserService();
 
-    /**
-     * A map of users, where the key is the user and the value is a set of readings that the user has access to.
-     */
-    private static final HashMap<User, Set<Reading>> users = new HashMap<>();
+    public static UserService getInstance() {
+        return INSTANCE;
+    }
 
-    /**
-     * A list of roles that are considered to be administrative.
-     */
-    private static final List<String> ROLES = List.of("admin", "administrator", "админ", "администратор");
+    private Users users = Users.getInstance();
+    private Logs logs = Logs.getInstance();
 
     /**
      * The currently logged in user.
      */
-    private static User currentUser;
+    private User currentUser;
 
-    /**
-     * Returns a map of all users and their readings.
-     *
-     * @return a map of users and their readings
-     */
-    public static Map<User, Set<Reading>> getUsers() {
-        return users;
-    }
 
     /**
      * Returns the currently logged in user.
      *
      * @return the currently logged in user
      */
-    public static User getCurrentUser() {
+    public User getCurrentUser() {
         return currentUser;
-    }
-
-    /**
-     * Sets the currently logged in user.
-     *
-     * @param newUser the new user to log in
-     */
-    public static void setCurrentUser(User newUser) {
-        UserService.currentUser = newUser;
     }
 
     /**
@@ -64,16 +43,16 @@ public class UserService {
      * @param password the password of the new user
      * @throws Exception if the user is already registered or there is an error registering the user
      */
-    public static void registration(String username, String password) throws Exception {
+    public void registration(String username, String password, Roles role) throws Exception {
         if (currentUser != null) {
-            throw new Exception("Невозможно зарегистрироваться!\nВы уже авторизованы как " + currentUser.getUsername() + "!");
+            throw new AlreadyAuthorizatedException(currentUser);
         }
-        User newUser = new User(username, password, ROLES.contains(username.toLowerCase()));
-        if (users.keySet().stream().anyMatch(user -> user.getUsername().equalsIgnoreCase(username))) {
-            throw new Exception("Такой пользователь уже зарегистрирован!\nПопробуйте еще раз");
+        User newUser = new User(username, password, role);
+        if (users.getUsers().keySet().stream().anyMatch(user -> user.getUsername().equalsIgnoreCase(username))) {
+            throw new UserAlreadyExistsException();
         }
-        users.put(newUser, new HashSet<>());
-        addLog(newUser, new Log("зарегистрировался"));
+        users.addUser(newUser);
+        logs.addLog(newUser, new org.du6ak.models.Log("зарегистрировался"));
     }
 
     /**
@@ -83,16 +62,16 @@ public class UserService {
      * @param password the password of the user
      * @throws Exception if the user is not registered or the password is incorrect
      */
-    public static void login(String username, String password) throws Exception {
+    public void login(String username, String password) throws Exception {
         if (currentUser != null) {
-            throw new Exception("Вы уже авторизованы!");
+            throw new AlreadyAuthorizatedException(currentUser);
         }
-        if (users.isEmpty()) {
-            throw new Exception("Пользователь " + username + " не найден в базе.\nПожалуйста, пройдите регистрацию!");
+        if (users.getUsers().keySet().stream().noneMatch(user -> user.getUsername().equalsIgnoreCase(username))) {
+            throw new UserNotFoundException();
         }
-        currentUser = users.keySet().stream().filter(user -> user.getUsername().equalsIgnoreCase(username) && user.getPassword().equals(password)).findFirst()
-                .orElseThrow(() -> new Exception("Неправильный логин или пароль!\nПопробуйте еще раз"));
-        addLog(currentUser, new Log("авторизировался"));
+        currentUser = users.getUsers().keySet().stream().filter(user -> user.getUsername().equalsIgnoreCase(username) && user.getPassword().equals(password)).findFirst()
+                .orElseThrow(IncorrectDataException::new);
+        logs.addLog(currentUser, new org.du6ak.models.Log("авторизировался"));
     }
 
     /**
@@ -100,12 +79,12 @@ public class UserService {
      *
      * @throws Exception if the user is not logged in
      */
-    public static void logout() throws Exception {
+    public void logout() throws Exception {
         if (currentUser == null) {
-            throw new Exception("Вы не авторизованы!");
+            throw new NotAuthorizatedException();
         }
-        addLog(currentUser, new Log("вышел из учетной записи"));
-        setCurrentUser(null);
+        logs.addLog(currentUser, new org.du6ak.models.Log("вышел из учетной записи"));
+        currentUser = null;
     }
 
     /**
@@ -114,14 +93,14 @@ public class UserService {
      * @param targetUsername the username of the user to check
      * @return the user if they are registered, or null if they are not registered
      */
-    public static User isRegistered(String targetUsername) {
-        return users.keySet().stream().filter(user -> user.getUsername().equalsIgnoreCase(targetUsername)).findFirst().orElse(null);
+    public User isRegistered(String targetUsername) {
+        return users.getUsers().keySet().stream().filter(user -> user.getUsername().equalsIgnoreCase(targetUsername)).findFirst().orElse(null);
     }
 
     /**
      * Exits the program.
      */
-    public static void exit() {
+    public void exit() {
         System.exit(1);
     }
 

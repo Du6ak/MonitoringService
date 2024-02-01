@@ -31,4 +31,7 @@ public class Log {
         this.date = LocalDateTime.now().format(FORMATTER);
         this.action = action;
     }
+    private static Log getInstance(String action) {
+        return new Log(action);
+    }
 }
