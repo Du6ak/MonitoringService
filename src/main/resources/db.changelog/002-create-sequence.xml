@@ -6,14 +6,29 @@
          https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd"
         logicalFilePath="db/changelog.xml">
     <changeSet id="002-create-sequence" author="Du6ak">
-        <createSequence  cacheSize="371717"
-                         cycle="true"
-                         dataType="int"
+        <createSequence  cycle="true"
+                         dataType="INT"
                          incrementBy="1"
                          maxValue="2147483647"
                          minValue="1"
                          schemaName="entity"
-                         sequenceName="seq_id"
+                         sequenceName="seq_user_id"
+                         startValue="1"/>
+        <createSequence  cycle="true"
+                         dataType="INT"
+                         incrementBy="1"
+                         maxValue="2147483647"
+                         minValue="1"
+                         schemaName="entity"
+                         sequenceName="seq_log_id"
+                         startValue="1"/>
+        <createSequence  cycle="true"
+                         dataType="INT"
+                         incrementBy="1"
+                         maxValue="2147483647"
+                         minValue="1"
+                         schemaName="entity"
+                         sequenceName="seq_reading_id"
                          startValue="1"/>
     </changeSet>
 </databaseChangeLog>

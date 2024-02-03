@@ -1,6 +1,5 @@
 package org.du6ak.models;
 
-import lombok.Data;
 import org.du6ak.configuration.DBConfiguration;
 
 import java.sql.Connection;
@@ -14,7 +13,6 @@ import java.util.List;
 /**
  * A class that represents a reading from a meter.
  */
-@Data
 public class Reading {
     private static final Reading INSTANCE = new Reading();
 

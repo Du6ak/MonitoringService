@@ -7,10 +7,8 @@
         logicalFilePath="db/changelog.xml">
     <changeSet id="003-create-tables" author="Du6ak">
         <!--            create Users table-->
-        <createTable tableName="users" schemaName="entity">
-<!--            <column name="id" type="INT" autoIncrement="true">-->
-            <column name="id" type="INT" valueSequenceNext="seq_id">
-<!--                <constraints primaryKey="true"/>-->
+        <createTable tableName="users" schemaName="entity" >
+            <column name="id" type="INT" defaultValueComputed="nextval('entity.seq_user_id')">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="name" type="VARCHAR(50)"/>
@@ -33,7 +31,7 @@
         </createTable>
         <!--            create Logs table-->
         <createTable tableName="logs" schemaName="entity">
-            <column name="id" type="INT" valueSequenceNext="seq_id">
+            <column name="id" type="INT" defaultValueComputed="nextval('entity.seq_log_id')">
                 <constraints primaryKey="true"/>
             </column>
             <column name="user_id" type="INT"/>
@@ -42,7 +40,7 @@
         </createTable>
         <!--            create Readings table-->
         <createTable tableName="readings" schemaName="entity">
-            <column name="id" type="INT" valueSequenceNext="seq_id">
+            <column name="id" type="INT" defaultValueComputed="nextval('entity.seq_reading_id')">
                 <constraints primaryKey="true"/>
             </column>
             <column name="user_id" type="INT">

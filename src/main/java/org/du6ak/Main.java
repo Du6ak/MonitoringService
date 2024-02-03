@@ -1,5 +1,6 @@
 package org.du6ak;
 
+import liquibase.Liquibase;
 import org.du6ak.services.out.menu.MainMenu;
 
 /**
@@ -19,6 +20,7 @@ public class Main {
      * @param args command line arguments
      */
     public static void main(String[] args) throws Exception {
+        LiquibaseCreateAndInsertTables.main(args);
         Main.getInstance().run();
     }
 
