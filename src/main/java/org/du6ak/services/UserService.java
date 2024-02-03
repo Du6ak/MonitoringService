@@ -1,10 +1,8 @@
 package org.du6ak.services;
 
 import lombok.Data;
+import org.du6ak.models.Log;
 import org.du6ak.models.User;
-import org.du6ak.repositories.Logs;
-import org.du6ak.repositories.Roles;
-import org.du6ak.repositories.Users;
 import org.du6ak.services.exceptions.*;
 
 /**
@@ -18,83 +16,66 @@ public class UserService {
         return INSTANCE;
     }
 
-    private Users users = Users.getInstance();
-    private Logs logs = Logs.getInstance();
+    private User user = User.getInstance();
+    private Log log = Log.getInstance();
 
     /**
      * The currently logged in user.
      */
-    private User currentUser;
-
-
-    /**
-     * Returns the currently logged in user.
-     *
-     * @return the currently logged in user
-     */
-    public User getCurrentUser() {
-        return currentUser;
-    }
+    private String currentUser;
 
     /**
-     * Registers a new user.
+     * This method registers a new user with the system.
      *
      * @param username the username of the new user
-     * @param password the password of the new user
-     * @throws Exception if the user is already registered or there is an error registering the user
+     * @param password the password of the <PASSWORD>
+     * @param role     the role of the new user (1 for regular user, 2 for administrator)
+     * @throws Exception if the user is already authorized, if the username is already in use, or if there was an error registering the user
      */
-    public void registration(String username, String password, Roles role) throws Exception {
+    public void registration(String username, String password, int role) throws Exception {
         if (currentUser != null) {
             throw new AlreadyAuthorizatedException(currentUser);
         }
-        User newUser = new User(username, password, role);
-        if (users.getUsers().keySet().stream().anyMatch(user -> user.getUsername().equalsIgnoreCase(username))) {
+        if (user.isContains(username)) {
             throw new UserAlreadyExistsException();
         }
-        users.addUser(newUser);
-        logs.addLog(newUser, new org.du6ak.models.Log("зарегистрировался"));
+        user.addUser(username, password, role);
+        log.addLog(user.getUserId(username), "зарегистрировался");
     }
 
     /**
-     * Logs in an existing user.
+     * This method authenticates a user's login credentials.
      *
      * @param username the username of the user
      * @param password the password of the user
-     * @throws Exception if the user is not registered or the password is incorrect
+     * @throws Exception if the user is already authenticated, if the username is not found, or if the password is incorrect
      */
     public void login(String username, String password) throws Exception {
         if (currentUser != null) {
             throw new AlreadyAuthorizatedException(currentUser);
         }
-        if (users.getUsers().keySet().stream().noneMatch(user -> user.getUsername().equalsIgnoreCase(username))) {
+        if (!user.isContains(username) || username.isEmpty()) {
             throw new UserNotFoundException();
         }
-        currentUser = users.getUsers().keySet().stream().filter(user -> user.getUsername().equalsIgnoreCase(username) && user.getPassword().equals(password)).findFirst()
-                .orElseThrow(IncorrectDataException::new);
-        logs.addLog(currentUser, new org.du6ak.models.Log("авторизировался"));
+        if (!user.getUser(username, password)) {
+            throw new IncorrectDataException();
+        }
+        currentUser = username;
+        log.addLog(user.getUserId(username), "авторизировался");
     }
 
     /**
-     * Logs out the currently logged in user.
+     * The logout method is used to log the user out of the system.
      *
-     * @throws Exception if the user is not logged in
+     * @param username is the name of the user who wants to log out.
+     * @throws Exception If the current user is not installed.
      */
-    public void logout() throws Exception {
+    public void logout(String username) throws Exception {
         if (currentUser == null) {
             throw new NotAuthorizatedException();
         }
-        logs.addLog(currentUser, new org.du6ak.models.Log("вышел из учетной записи"));
-        currentUser = null;
-    }
-
-    /**
-     * Checks if a user is registered.
-     *
-     * @param targetUsername the username of the user to check
-     * @return the user if they are registered, or null if they are not registered
-     */
-    public User isRegistered(String targetUsername) {
-        return users.getUsers().keySet().stream().filter(user -> user.getUsername().equalsIgnoreCase(targetUsername)).findFirst().orElse(null);
+        log.addLog(user.getUserId(username), "вышел из учетной записи");
+        setCurrentUser(null);
     }
 
     /**

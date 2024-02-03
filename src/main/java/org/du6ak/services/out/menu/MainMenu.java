@@ -1,7 +1,7 @@
 package org.du6ak.services.out.menu;
 
 import org.du6ak.services.MenuService;
-import org.du6ak.services.exceptions.WrongOperationException;
+import org.du6ak.services.exceptions.IncorrectDataException;
 import org.du6ak.services.in.ConsoleReaderService;
 import org.du6ak.services.out.ConsoleWriterService;
 
@@ -16,34 +16,44 @@ public class MainMenu {
         return INSTANCE;
     }
 
+    /**
+     * A service for writing strings to the console.
+     */
     private final ConsoleWriterService consoleWriterService = ConsoleWriterService.getInstance();
-    private final ConsoleReaderService consoleReaderService = ConsoleReaderService.getInstance();
-    private final MenuService menuService = MenuService.getInstance();
-    private final MainMenu mainMenu = getInstance();
 
     /**
-     * Prints a welcome message to the console.
+     * A service for reading strings from the console.
+     */
+    private final ConsoleReaderService consoleReaderService = ConsoleReaderService.getInstance();
+
+    /**
+     * A service for managing the main menu options.
+     */
+    private final MenuService menuService = MenuService.getInstance();
+
+    /**
+     * Prints the greetings to the console.
      *
-     * @throws Exception if an I/O error occurs
+     * @throws Exception if an error occurs while writing to the console.
      */
     public void greetings() throws Exception {
         consoleWriterService.printStrings(
                 "--------------------------------",
                 "| Добро пожаловать в программу |",
-                "--------------------------------\n"
+                "--------------------------------"
         );
         menuService.mainMenuChoice();
     }
 
     /**
-     * Displays the main menu and returns the user's choice.
+     * Shows the main menu to the user and returns their choice.
      *
-     * @return the user's choice
-     * @throws WrongOperationException if the user enters an invalid choice
+     * @return the user's choice from the main menu.
+     * @throws IncorrectDataException if the user enters an invalid choice.
      */
-    public int showMainMenu() throws WrongOperationException {
+    public int showMainMenu() throws IncorrectDataException {
         consoleWriterService.printStrings(
-                "Выберите действие (введите номер операции от 1 до 3):",
+                "\nВыберите действие (введите номер операции от 1 до 3):",
                 "1. Зарегистрироваться",
                 "2. Войти",
                 "3. Закрыть программу"

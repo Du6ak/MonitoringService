@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd"
+        logicalFilePath="db/changelog.xml">
+    <changeSet id="003-create-tables" author="Du6ak">
+        <!--            create Users table-->
+        <createTable tableName="users" schemaName="entity">
+<!--            <column name="id" type="INT" autoIncrement="true">-->
+            <column name="id" type="INT" valueSequenceNext="seq_id">
+<!--                <constraints primaryKey="true"/>-->
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(50)"/>
+            <column name="password" type="VARCHAR(255)"/>
+            <column name="role_id" type="INT"/>
+        </createTable>
+        <!--            create Roles table-->
+        <createTable tableName="roles" schemaName="service">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(50)"/>
+        </createTable>
+        <!--            create ReadingTypes table-->
+        <createTable tableName="reading_types" schemaName="service">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(50)"/>
+        </createTable>
+        <!--            create Logs table-->
+        <createTable tableName="logs" schemaName="entity">
+            <column name="id" type="INT" valueSequenceNext="seq_id">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="user_id" type="INT"/>
+            <column name="log_date" type="DATETIME"/>
+            <column name="log_text" type="TEXT"/>
+        </createTable>
+        <!--            create Readings table-->
+        <createTable tableName="readings" schemaName="entity">
+            <column name="id" type="INT" valueSequenceNext="seq_id">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="user_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reading_type_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="contract_number" type="INT"/>
+            <column name="value" type="INT"/>
+            <column name="month" type="INT"/>
+        </createTable>
+        <!--        create foreign keys-->
+        <addForeignKeyConstraint baseTableName="readings" baseColumnNames="user_id" baseTableSchemaName="entity"
+                                 constraintName="fk_readings_users"
+                                 referencedTableName="users" referencedColumnNames="id" referencedTableSchemaName="entity"
+                                 onUpdate="CASCADE"/>
+
+<!--        <addForeignKeyConstraint baseTableName="readings" baseColumnNames="reading_type_id" baseTableSchemaName="entity"-->
+<!--                                 constraintName="fk_readings_reading_types"-->
+<!--                                 referencedTableName="reading_types" referencedColumnNames="id" referencedTableSchemaName="service"-->
+<!--                                 onUpdate="CASCADE"/>-->
+
+        <addForeignKeyConstraint baseTableName="users" baseColumnNames="role_id" baseTableSchemaName="entity"
+                                 constraintName="fk_users_roles"
+                                 referencedTableName="roles" referencedColumnNames="id" referencedTableSchemaName="service"
+                                 onUpdate="CASCADE"/>
+
+        <addForeignKeyConstraint baseTableName="logs" baseColumnNames="user_id" baseTableSchemaName="entity"
+                                 constraintName="fk_logs_users"
+                                 referencedTableName="users" referencedColumnNames="id" referencedTableSchemaName="entity"
+                                 onUpdate="CASCADE"/>
+    </changeSet>
+</databaseChangeLog>

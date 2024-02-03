@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd"
+        logicalFilePath="db/changelog.xml">
+    <changeSet id="002-create-sequence" author="Du6ak">
+        <createSequence  cacheSize="371717"
+                         cycle="true"
+                         dataType="int"
+                         incrementBy="1"
+                         maxValue="2147483647"
+                         minValue="1"
+                         schemaName="entity"
+                         sequenceName="seq_id"
+                         startValue="1"/>
+    </changeSet>
+</databaseChangeLog>

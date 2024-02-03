@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.5.xsd"
+        logicalFilePath="db/changelog.xml">
+    <changeSet id="004-insert-data" author="Du6ak">
+<!--        reading types table insert-->
+        <insert tableName="reading_types" schemaName="service">
+            <column name="name" value="горячая вода"/>
+        </insert>
+        <insert tableName="reading_types" schemaName="service">
+            <column name="name" value="холодная вода"/>
+        </insert>
+        <insert tableName="reading_types" schemaName="service">
+            <column name="name" value="электричество"/>
+        </insert>
+<!--        roles table insert-->
+        <insert tableName="roles" schemaName="service">
+            <column name="name" value="USER"/>
+        </insert>
+        <insert tableName="roles" schemaName="service">
+            <column name="name" value="ADMIN"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>
