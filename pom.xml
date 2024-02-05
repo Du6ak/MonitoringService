@@ -27,6 +27,7 @@
         <mockito-junit-jupiter.version>5.7.0</mockito-junit-jupiter.version>
         <postgresql.version>42.7.1</postgresql.version>
         <testcontainers.postgresql.version>1.19.4</testcontainers.postgresql.version>
+        <logback-classic.version>1.4.12</logback-classic.version>
     </properties>
 
     <dependencies>
@@ -39,6 +40,12 @@
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-maven-plugin</artifactId>
             <version>${liquibase-maven-plugin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -63,12 +70,6 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
@@ -102,6 +103,11 @@
             <artifactId>postgresql</artifactId>
             <version>${testcontainers.postgresql.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback-classic.version}</version>
         </dependency>
     </dependencies>
     <build>

@@ -65,12 +65,14 @@ public class User {
      * @return the ID of the user with the given username
      * @throws SQLException if there is an error while executing the SQL query
      */
-    public int getUserId(String username) throws SQLException {
+    public int getUserId(String username) throws SQLException, UserNotFoundException {
         Statement statement = DB_CONFIG.getStatement();
         String sql = "SELECT id FROM entity.users WHERE LOWER(name) = '" + username.toLowerCase() + "';";
         ResultSet rs = statement.executeQuery(sql);
-        rs.next();
-        return rs.getInt(1);
+        if (rs.next()){
+            return rs.getInt(1);
+        }
+        throw new UserNotFoundException();
     }
 
     /**

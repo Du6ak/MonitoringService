@@ -1,33 +1,25 @@
 package org.du6ak.configuration;
 
+import org.du6ak.services.exceptions.ConnectionProblemsException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.utility.DockerImageName;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import java.sql.Connection;
+import java.sql.Statement;
 
 public class DBConfigurationTest {
 
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
-            "postgres:16.0"
-    );
-    @BeforeAll
-    static void beforeAll() {
-        postgres.start();
+    @Test
+    public void testGetStatement() throws ConnectionProblemsException {
+        DBConfiguration dbConfiguration = DBConfiguration.getInstance();
+        Statement statement = dbConfiguration.getStatement();
+        Assertions.assertNotNull(statement);
     }
 
-    @AfterAll
-    static void afterAll() {
-        postgres.stop();
-    }
-
-    @BeforeEach
-    void setUp() {
-
+    @Test
+    public void testGetConnection() throws ConnectionProblemsException {
+        DBConfiguration dbConfiguration = DBConfiguration.getInstance();
+        Connection connection = dbConfiguration.getConnection();
+        Assertions.assertNotNull(connection);
     }
 }
