@@ -60,7 +60,7 @@ public class Log {
         ResultSet rs = DB_CONFIG.getStatement().executeQuery(sql);
         List<String> userLogs = new ArrayList<>();
         while (rs.next()) {
-            userLogs.add("Время -> " + rs.getTimestamp("log_date").toString() + ", действие -> " + username + rs.getString("log_text"));
+            userLogs.add("Время -> " + rs.getTimestamp("log_date").toString() + ", действие -> " + username + " " + rs.getString("log_text"));
         }
         return userLogs;
     }

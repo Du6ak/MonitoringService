@@ -28,6 +28,7 @@
         <postgresql.version>42.7.1</postgresql.version>
         <testcontainers.postgresql.version>1.19.4</testcontainers.postgresql.version>
         <logback-classic.version>1.4.12</logback-classic.version>
+        <jakarta.servlet.version>6.0.0</jakarta.servlet.version>
     </properties>
 
     <dependencies>
@@ -109,12 +110,20 @@
             <artifactId>logback-classic</artifactId>
             <version>${logback-classic.version}</version>
         </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${jakarta.servlet.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <source>17</source>
                     <target>17</target>
