@@ -1,25 +1,31 @@
 package org.du6ak.services.out.menu;
 
-import org.du6ak.services.exceptions.WrongOperationException;
-
-import static org.du6ak.services.in.ConsoleReaderService.readInt;
-import static org.du6ak.services.in.ConsoleReaderService.readString;
-import static org.du6ak.services.out.ConsoleWriterService.printStrings;
+import org.du6ak.services.exceptions.IncorrectDataException;
+import org.du6ak.services.in.ConsoleReaderService;
+import org.du6ak.services.out.ConsoleWriterService;
 
 /**
  * Provides methods for interacting with the user through the console.
  */
 public class AdminMenu {
+    private static final AdminMenu INSTANCE = new AdminMenu();
+
+    public static AdminMenu getInstance() {
+        return INSTANCE;
+    }
+
+    private final ConsoleReaderService consoleReaderService = ConsoleReaderService.getInstance();
+    private final ConsoleWriterService consoleWriterService = ConsoleWriterService.getInstance();
 
     /**
-     * Displays the main menu for the administrator.
+     * Shows the admin menu to the user and returns the selected option.
      *
-     * @return the user's choice as an integer
-     * @throws WrongOperationException if the user enters an invalid choice
+     * @return the selected option
+     * @throws IncorrectDataException if the user enters an invalid option
      */
-    public static int showAdminMenu() throws WrongOperationException {
-        printStrings(
-                "Выберите действие (введите номер операции от 1 до 8):",
+    public int showAdminMenu() throws IncorrectDataException {
+        consoleWriterService.printStrings(
+                "\nВыберите действие (введите номер операции от 1 до 8):",
                 "1. Внести показания",
                 "2. Посмотреть актуальные(последние) показания",
                 "3. Посмотреть показания за конкретный месяц",
@@ -29,46 +35,56 @@ public class AdminMenu {
                 "7. Сменить пользователя",
                 "8. Выход из программы"
         );
-        return readInt();
+        return consoleReaderService.readInt();
     }
 
     /**
-     * Asks the user whether they want to view their own readings or another user's readings.
+     * Shows the choice for reading options to the user and returns the selected option.
      *
-     * @return the user's choice as an integer
-     * @throws WrongOperationException if the user enters an invalid choice
+     * @return the selected option
+     * @throws IncorrectDataException if the user enters an invalid option
      */
-    public static int showReadingsChoice() throws WrongOperationException {
-        printStrings(
-                "Вы хотите посмотреть свои показания?",
+    public int showReadingsChoice() throws IncorrectDataException {
+        consoleWriterService.printStrings(
+                "\nВы хотите посмотреть свои показания?",
                 "1. Мои показания",
                 "2. Показания пользователя"
         );
-        return readInt();
+        int value = consoleReaderService.readInt();
+        if (value != 1 && value != 2) {
+            throw new IncorrectDataException();
+        }
+        return value;
     }
 
     /**
-     * Asks the user whether they want to edit the list of supported readings.
+     * Shows the editing options for reading types to the user and returns the selected option.
      *
-     * @return the user's choice as an integer
-     * @throws WrongOperationException if the user enters an invalid choice
+     * @return the selected option
+     * @throws IncorrectDataException if the user enters an invalid option
      */
-    public static int showReadingsEdit() throws WrongOperationException {
-        printStrings(
-                "Редактирование перечня подаваемых показаний",
-                "1. Добавить новый тип счетчика",
-                "2. Удалить тип счетчика"
+    public int showReadingsEdit() throws IncorrectDataException {
+        consoleWriterService.printStrings(
+                "\nРедактирование перечня подаваемых показаний",
+                "1. Добавить новый счетчик",
+                "2. Удалить счетчик"
         );
-        return readInt();
+        int value = consoleReaderService.readInt();
+        if (value != 1 && value != 2) {
+            throw new IncorrectDataException();
+        }
+        return value;
     }
 
     /**
-     * Prompts the user to enter a username and returns it.
+     * Prompts the user to enter a new reading type and returns the input.
      *
-     * @return the username entered by the user
+     * @return the new reading type
      */
-    public static String getTargetUsername() {
-        printStrings("Введите имя пользователя:");
-        return readString();
+    public String newReadingType() {
+        consoleWriterService.printStrings("Введите новый тип счетчика:");
+        return consoleReaderService.readString();
     }
+
+
 }

@@ -2,126 +2,86 @@ package org.du6ak.services;
 
 import lombok.Data;
 import org.du6ak.models.Log;
-import org.du6ak.models.Reading;
 import org.du6ak.models.User;
-
-import java.util.*;
-
-import static org.du6ak.services.LogService.*;
+import org.du6ak.services.exceptions.*;
 
 /**
  * This class provides services for managing users.
  */
 @Data
 public class UserService {
+    private static final UserService INSTANCE = new UserService();
 
-    /**
-     * A map of users, where the key is the user and the value is a set of readings that the user has access to.
-     */
-    private static final HashMap<User, Set<Reading>> users = new HashMap<>();
+    public static UserService getInstance() {
+        return INSTANCE;
+    }
 
-    /**
-     * A list of roles that are considered to be administrative.
-     */
-    private static final List<String> ROLES = List.of("admin", "administrator", "админ", "администратор");
+    private User user = User.getInstance();
+    private Log log = Log.getInstance();
 
     /**
      * The currently logged in user.
      */
-    private static User currentUser;
+    private String currentUser;
 
     /**
-     * Returns a map of all users and their readings.
-     *
-     * @return a map of users and their readings
-     */
-    public static Map<User, Set<Reading>> getUsers() {
-        return users;
-    }
-
-    /**
-     * Returns the currently logged in user.
-     *
-     * @return the currently logged in user
-     */
-    public static User getCurrentUser() {
-        return currentUser;
-    }
-
-    /**
-     * Sets the currently logged in user.
-     *
-     * @param newUser the new user to log in
-     */
-    public static void setCurrentUser(User newUser) {
-        UserService.currentUser = newUser;
-    }
-
-    /**
-     * Registers a new user.
+     * This method registers a new user with the system.
      *
      * @param username the username of the new user
-     * @param password the password of the new user
-     * @throws Exception if the user is already registered or there is an error registering the user
+     * @param password the password of the <PASSWORD>
+     * @param role     the role of the new user (1 for regular user, 2 for administrator)
+     * @throws Exception if the user is already authorized, if the username is already in use, or if there was an error registering the user
      */
-    public static void registration(String username, String password) throws Exception {
+    public void registration(String username, String password, int role) throws Exception {
         if (currentUser != null) {
-            throw new Exception("Невозможно зарегистрироваться!\nВы уже авторизованы как " + currentUser.getUsername() + "!");
+            throw new AlreadyAuthorizatedException(currentUser);
         }
-        User newUser = new User(username, password, ROLES.contains(username.toLowerCase()));
-        if (users.keySet().stream().anyMatch(user -> user.getUsername().equalsIgnoreCase(username))) {
-            throw new Exception("Такой пользователь уже зарегистрирован!\nПопробуйте еще раз");
+        if (user.isContains(username)) {
+            throw new UserAlreadyExistsException();
         }
-        users.put(newUser, new HashSet<>());
-        addLog(newUser, new Log("зарегистрировался"));
+        user.addUser(username, password, role);
+        log.addLog(user.getUserId(username), "зарегистрировался");
     }
 
     /**
-     * Logs in an existing user.
+     * This method authenticates a user's login credentials.
      *
      * @param username the username of the user
      * @param password the password of the user
-     * @throws Exception if the user is not registered or the password is incorrect
+     * @throws Exception if the user is already authenticated, if the username is not found, or if the password is incorrect
      */
-    public static void login(String username, String password) throws Exception {
+    public void login(String username, String password) throws Exception {
         if (currentUser != null) {
-            throw new Exception("Вы уже авторизованы!");
+            throw new AlreadyAuthorizatedException(currentUser);
         }
-        if (users.isEmpty()) {
-            throw new Exception("Пользователь " + username + " не найден в базе.\nПожалуйста, пройдите регистрацию!");
+        if (!user.isContains(username) || username.isEmpty()) {
+            throw new UserNotFoundException();
         }
-        currentUser = users.keySet().stream().filter(user -> user.getUsername().equalsIgnoreCase(username) && user.getPassword().equals(password)).findFirst()
-                .orElseThrow(() -> new Exception("Неправильный логин или пароль!\nПопробуйте еще раз"));
-        addLog(currentUser, new Log("авторизировался"));
+        if (!user.getUser(username, password)) {
+            throw new IncorrectDataException();
+        }
+        currentUser = username;
+        log.addLog(user.getUserId(username), "авторизировался");
     }
 
     /**
-     * Logs out the currently logged in user.
+     * The logout method is used to log the user out of the system.
      *
-     * @throws Exception if the user is not logged in
+     * @param username is the name of the user who wants to log out.
+     * @throws Exception If the current user is not installed.
      */
-    public static void logout() throws Exception {
+    public void logout(String username) throws Exception {
         if (currentUser == null) {
-            throw new Exception("Вы не авторизованы!");
+            throw new NotAuthorizatedException();
         }
-        addLog(currentUser, new Log("вышел из учетной записи"));
+        log.addLog(user.getUserId(username), "вышел из учетной записи");
         setCurrentUser(null);
-    }
-
-    /**
-     * Checks if a user is registered.
-     *
-     * @param targetUsername the username of the user to check
-     * @return the user if they are registered, or null if they are not registered
-     */
-    public static User isRegistered(String targetUsername) {
-        return users.keySet().stream().filter(user -> user.getUsername().equalsIgnoreCase(targetUsername)).findFirst().orElse(null);
     }
 
     /**
      * Exits the program.
      */
-    public static void exit() {
+    public void exit() {
         System.exit(1);
     }
 

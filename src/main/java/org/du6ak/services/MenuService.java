@@ -1,24 +1,35 @@
 package org.du6ak.services;
 
-import org.du6ak.models.User;
-import org.du6ak.services.exceptions.WrongOperationException;
+import org.du6ak.models.*;
+import org.du6ak.services.exceptions.IncorrectDataException;
+import org.du6ak.services.out.ConsoleWriterService;
+import org.du6ak.services.out.menu.AdminMenu;
+import org.du6ak.services.out.menu.MainMenu;
+import org.du6ak.services.out.menu.ReadingMenu;
+import org.du6ak.services.out.menu.UserMenu;
 
-import java.util.List;
-
-import static org.du6ak.services.AdminService.*;
-import static org.du6ak.services.MeterReadingService.*;
-import static org.du6ak.services.UserService.*;
-import static org.du6ak.services.in.ConsoleReaderService.readString;
-import static org.du6ak.services.out.ConsoleWriterService.*;
-import static org.du6ak.services.out.ConsoleWriterService.printReadings;
-import static org.du6ak.services.out.menu.AdminMenu.*;
-import static org.du6ak.services.out.menu.MainMenu.showMainMenu;
-import static org.du6ak.services.out.menu.UserMenu.*;
 
 /**
  * This class provides the main menu and user menu for the application.
  */
 public class MenuService {
+    private static final MenuService INSTANCE = new MenuService();
+
+    public static MenuService getInstance() {
+        return INSTANCE;
+    }
+
+    private final UserService userService = UserService.getInstance();
+    private final ConsoleWriterService consoleWriterService = ConsoleWriterService.getInstance();
+    private final UserMenu userMenu = UserMenu.getInstance();
+    private final AdminMenu adminMenu = AdminMenu.getInstance();
+    private final MeterReadingService meterReadingService = MeterReadingService.getInstance();
+    private final ReadingMenu readingMenu = ReadingMenu.getInstance();
+    private final User user = User.getInstance();
+    private final ReadingType readingType = ReadingType.getInstance();
+    private final Log log = Log.getInstance();
+    private final Role role = Role.getInstance();
+
     /**
      * This method displays the main menu and prompts the user to make a selection. The user can then choose
      * from options such as registering, logging in, or exiting the program. If the user chooses to exit, the
@@ -29,41 +40,39 @@ public class MenuService {
      *
      * @throws Exception if there is an error while processing the user input
      */
-    public static void mainMenuChoice() throws Exception {
+    public void mainMenuChoice() throws Exception {
         try {
-            switch (showMainMenu()) {
+            switch (MainMenu.getInstance().showMainMenu()) {
                 case 1 -> { // "1. Register"
-                    printStrings("Введите имя пользователя:");
-                    String username = readString();
-                    printStrings("Введите пароль:");
-                    String password = readString();
-                    registration(username, password);
-                    printStrings("Регистрация прошла успешно!");
+                    String username = userMenu.getUsernameMenu();
+                    String password = userMenu.getPasswordMenu();
+                    int roleId = userMenu.getRoleMenu();
+                    userService.registration(username, password, roleId);
+                    consoleWriterService.printStrings("Регистрация прошла успешно!");
+
                 }
                 case 2 -> { // "2. Login"
-                    printStrings("Введите имя пользователя:");
-                    String username = readString();
-                    printStrings("Введите пароль:");
-                    String password = readString();
-                    login(username, password);
-                    printStrings("Авторизация прошла успешно!");
+                    String username = userMenu.getUsernameMenu();
+                    String password = userMenu.getPasswordMenu();
+                    userService.login(username, password);
+                    consoleWriterService.printStrings("Авторизация прошла успешно!");
                 }
                 case 3 -> { // "3. Exit"
-                    if (showExitConfirm() == 1) {
-                        printStrings("Завершение программы...");
-                        exit();
+                    if (userMenu.showExitConfirm() == 1) {
+                        consoleWriterService.printStrings("Завершение программы...");
+                        userService.exit();
                     }
                 }
-                default -> throw new WrongOperationException();
+                default -> throw new IncorrectDataException();
             }
         } catch (Exception e) {
-            printErrors(e.getMessage());
+            consoleWriterService.printErrors(e.getMessage());
         }
-        if (getCurrentUser() != null) {
-            if (getCurrentUser().isAdmin()) {
-                adminMenuChoice(getCurrentUser()); // Admin menu
+        if (userService.getCurrentUser() != null) {
+            if ((role.getRoleName(user.getUserRole(userService.getCurrentUser()))).equalsIgnoreCase("admin")) {
+                adminMenuChoice(userService.getCurrentUser()); // Admin menu
             } else {
-                userMenuChoice(); // User menu
+                userMenuChoice(userService.getCurrentUser()); // User menu
             }
         } else {
             mainMenuChoice(); // Main menu
@@ -82,54 +91,57 @@ public class MenuService {
      * authenticated, they will be taken to the main menu. If the user enters an invalid option or provides
      * invalid input, they will be prompted to try again.
      *
+     * @param currentUser the currently authenticated user
      * @throws Exception if there is an error while processing the user input
      */
-    public static void userMenuChoice() throws Exception {
+    public void userMenuChoice(String currentUser) throws Exception {
         try {
-            switch (showUserMenu()) {
+            switch (userMenu.showUserMenu()) {
                 case 1 -> { // "1. Submit meter reading"
-                    sendReadings(getCurrentUser());
-                    printStrings("Показание со счетчика успешно отправлено!");
+                    int typeId = readingMenu.showReadingTypes();
+                    int contractNumber = readingMenu.getContractNumber();
+                    int value = readingMenu.getValue();
+                    int month = readingMenu.getMonth();
+                    meterReadingService.sendReadings(currentUser, typeId, contractNumber, value, month);
+                    consoleWriterService.printStrings("Показание со счетчика успешно отправлено!");
                 }
                 case 2 -> { // "2. View current readings"
-                    var latestReading = getActualReadings(getCurrentUser());
-                    printStrings("Ваши актуальные показания (" + latestReading.getType() + "):\n");
-                    printReadings(List.of(latestReading));
+                    int typeId = readingMenu.showReadingTypes();
+                    consoleWriterService.printStrings(meterReadingService.getActualReadings(currentUser, typeId));
                 }
                 case 3 -> { // "3. View readings by month"
-                    var readingByMonth = getMonthReadings(getCurrentUser());
-                    printStrings("Ваши показания за " + (readingByMonth.get(0).getMonth() - 1));
-                    printReadings(readingByMonth);
+                    int typeId = readingMenu.showReadingTypes();
+                    int month = readingMenu.getMonth();
+                    consoleWriterService.printList(meterReadingService.getMonthReadings(currentUser, typeId, month));
                 }
                 case 4 -> { // "4. View reading history"
-                    var readings = getHistoryReadings(getCurrentUser());
-                    printStrings("Ваша история подачи показаний:");
-                    printReadings(readings);
+                    consoleWriterService.printStrings("Ваша история подачи показаний:");
+                    consoleWriterService.printList(meterReadingService.getHistoryReadings(currentUser));
                 }
                 case 5 -> { // "5. Change user"
-                    if (showLogoutConfirm() == 1) {
-                        logout();
+                    if (userMenu.showLogoutConfirm() == 1) {
+                        userService.logout(currentUser);
                     }
                 }
                 case 6 -> { // "6. Exit"
-                    if (showExitConfirm() == 1) {
-                        printStrings("Завершение программы...");
-                        exit();
+                    if (userMenu.showExitConfirm() == 1) {
+                        consoleWriterService.printStrings("Завершение программы...");
+                        userService.exit();
                     }
                 }
-                default -> throw new WrongOperationException();
+                default -> throw new IncorrectDataException();
             }
         } catch (Exception e) {
-            printErrors(e.getMessage());
+            consoleWriterService.printErrors(e.getMessage());
         }
-        if (getCurrentUser() == null) {
-            mainMenuChoice(); // Main menu
-        } else {
-            if (isAdmin(getCurrentUser())) {
-                adminMenuChoice(getCurrentUser()); // Admin menu
+        if (userService.getCurrentUser() != null) {
+            if ((role.getRoleName(user.getUserRole(userService.getCurrentUser()))).equalsIgnoreCase("admin")) {
+                adminMenuChoice(userService.getCurrentUser()); // Admin menu
             } else {
-                userMenuChoice(); // User menu
+                userMenuChoice(userService.getCurrentUser()); // User menu
             }
+        } else {
+            mainMenuChoice(); // Main menu
         }
     }
 
@@ -151,85 +163,94 @@ public class MenuService {
      * @param currentUser the currently authenticated user
      * @throws Exception if there is an error while processing the user input
      */
-    public static void adminMenuChoice(User currentUser) throws Exception {
+    public void adminMenuChoice(String currentUser) throws Exception {
         try {
-            switch (showAdminMenu()) {
-                case 1 -> sendReadings(currentUser); // "1. Submit meter reading"
+            switch (adminMenu.showAdminMenu()) {
+                case 1 -> {
+                    int typeId = readingMenu.showReadingTypes();
+                    int contractNumber = readingMenu.getContractNumber();
+                    int value = readingMenu.getValue();
+                    int month = readingMenu.getMonth();
+                    meterReadingService.sendReadings(currentUser, typeId, contractNumber, value, month);
+                    consoleWriterService.printStrings("Показание со счетчика успешно отправлено!\n");
+                }
                 case 2 -> { // "2. View all current readings"
-                    int result = showReadingsChoice();
+                    int result = adminMenu.showReadingsChoice();
                     if (result == 1) {
-                        var actualReadings = getActualReadings(getCurrentUser());
-                        printStrings("Ваши актуальные показания (" + actualReadings.getType() + "):\n");
-                        printReadings(List.of(actualReadings));
+                        int typeId = readingMenu.showReadingTypes();
+                        consoleWriterService.printStrings(meterReadingService.getActualReadings(currentUser, typeId));
                     } else if (result == 2) {
-                        var actualReadings = getActualReadings(isRegistered(getTargetUsername()));
-                        printStrings("Актуальные показания пользователя (" + actualReadings.getType() + "):\n");
-                        printReadings(List.of(actualReadings));
+                        String targetUsername = userMenu.getUsernameMenu();
+                        int typeId = readingMenu.showReadingTypes();
+                        consoleWriterService.printStrings(meterReadingService.getActualReadings(targetUsername, typeId));
                     }
                 }
                 case 3 -> { // "3. View readings by month"
-                    int result = showReadingsChoice();
+                    int result = adminMenu.showReadingsChoice();
                     if (result == 1) {
-                        var readingByMonth = getMonthReadings(getCurrentUser());
-                        printStrings("Ваши показания за " + (readingByMonth.get(0).getMonth() - 1));
-                        printReadings(readingByMonth);
+                        int typeId = readingMenu.showReadingTypes();
+                        int month = readingMenu.getMonth();
+                        consoleWriterService.printList(meterReadingService.getMonthReadings(currentUser, typeId, month));
                     } else if (result == 2) {
-                        var readingByMonth = getMonthReadings(isRegistered(getTargetUsername()));
-                        printStrings("Показания пользователя за " + (readingByMonth.get(0).getMonth() - 1));
-                        printReadings(readingByMonth);
+                        String targetUsername = userMenu.getUsernameMenu();
+                        int typeId = readingMenu.showReadingTypes();
+                        int month = readingMenu.getMonth();
+                        consoleWriterService.printList(meterReadingService.getMonthReadings(targetUsername, typeId, month));
                     }
                 }
                 case 4 -> { // "4. View reading history"
-                    int result = showReadingsChoice();
+                    int result = adminMenu.showReadingsChoice();
                     if (result == 1) {
-                        var readings = getHistoryReadings(getCurrentUser());
-                        printStrings("Ваша история подачи показаний:");
-                        printReadings(readings);
+                        consoleWriterService.printStrings("Ваша история подачи показаний:");
+                        consoleWriterService.printList(meterReadingService.getHistoryReadings(currentUser));
                     } else if (result == 2) {
-                        var readings = getHistoryReadings(isRegistered(getTargetUsername()));
-                        printStrings("История подачи показаний пользователя:");
-                        printReadings(readings);
+                        String targetUsername = userMenu.getUsernameMenu();
+                        consoleWriterService.printStrings("История подачи показаний " + targetUsername + ":");
+                        consoleWriterService.printList(meterReadingService.getHistoryReadings(targetUsername));
                     }
                 }
                 case 5 -> { // "5. View user logs"
-                    var logs = getUserLog(isRegistered(getTargetUsername()));
-                    printStrings("Лог пользователя:");
-                    printLogs(logs);
+                    String targetUsername = userMenu.getUsernameMenu();
+                    consoleWriterService.printStrings("\nЛог пользователя " + targetUsername + ":");
+                    consoleWriterService.printList(log.getLogs(targetUsername, user.getUserId(targetUsername)));
                 }
                 case 6 -> { // "6. Extend meter types"
-                    int result = showReadingsEdit();
+                    int result = adminMenu.showReadingsEdit();
                     if (result == 1) {
-                        printStrings("Введите новый тип счетчика:");
-                        addReadingType(readString());
+                        String newReadingType = adminMenu.newReadingType();
+                        readingType.addReadingType(newReadingType);
+                        consoleWriterService.printStrings("Тип счетчика " + newReadingType + " добавлен!");
                     } else if (result == 2) {
-                        printStrings("Введите тип счетчика для удаления:");
-                        deleteReadingType(getTypeOfReading());
+                        int typeId = readingMenu.showReadingTypes();
+                        String typeName = readingType.getTypeName(typeId);
+                        readingType.deleteReadingType(typeId);
+                        consoleWriterService.printStrings("Тип счетчика " + typeName + " удален!");
                     }
                 }
                 case 7 -> { // "7. Change user"
-                    if (showLogoutConfirm() == 1) {
-                        logout();
+                    if (userMenu.showLogoutConfirm() == 1) {
+                        userService.logout(currentUser);
                     }
                 }
                 case 8 -> { // "8. Exit"
-                    if (showExitConfirm() == 1) {
-                        printStrings("Завершение программы...");
-                        exit();
+                    if (userMenu.showExitConfirm() == 1) {
+                        consoleWriterService.printStrings("Завершение программы...");
+                        userService.exit();
                     }
                 }
-                default -> throw new WrongOperationException();
+                default -> throw new IncorrectDataException();
             }
         } catch (Exception e) {
-            printErrors(e.getMessage());
+            consoleWriterService.printErrors(e.getMessage());
         }
-        if (getCurrentUser() == null) {
-            mainMenuChoice(); // Main menu
-        } else {
-            if (isAdmin(getCurrentUser())) {
-                adminMenuChoice(getCurrentUser()); // Admin menu
+        if (userService.getCurrentUser() != null) {
+            if ((role.getRoleName(user.getUserRole(userService.getCurrentUser()))).equalsIgnoreCase("admin")) {
+                adminMenuChoice(userService.getCurrentUser()); // Admin menu
             } else {
-                userMenuChoice(); // User menu
+                userMenuChoice(userService.getCurrentUser()); // User menu
             }
+        } else {
+            mainMenuChoice(); // Main menu
         }
     }
 }

@@ -1,11 +1,18 @@
 package org.du6ak;
 
-import static org.du6ak.services.out.menu.MainMenu.greetings;
+import liquibase.Liquibase;
+import org.du6ak.services.out.menu.MainMenu;
 
 /**
  * Main class of the program.
  */
 public class Main {
+    private static final Main INSTANCE = new Main();
+
+    public static Main getInstance() {
+        return INSTANCE;
+    }
+    final MainMenu mainMenu = MainMenu.getInstance();
 
     /**
      * Main method of the program.
@@ -13,15 +20,16 @@ public class Main {
      * @param args command line arguments
      */
     public static void main(String[] args) throws Exception {
-        run();
+        LiquibaseCreateAndInsertTables.main(args);
+        Main.getInstance().run();
     }
 
     /**
      * Runs the program in an infinite loop.
      */
-    public static void run() throws Exception {
+    public void run() throws Exception {
         while (true) {
-            greetings();
+            mainMenu.greetings();
         }
     }
 }

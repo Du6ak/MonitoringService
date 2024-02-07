@@ -1,18 +1,25 @@
 package org.du6ak.services.out;
 
-import org.du6ak.models.Log;
-import org.du6ak.models.Reading;
+import org.du6ak.configuration.DBConfiguration;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.Month;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Queue;
 
-import static org.du6ak.services.MeterReadingService.MONTHS;
 
 /**
  * A utility class for writing to the console.
  */
 public class ConsoleWriterService {
+    private static final ConsoleWriterService INSTANCE = new ConsoleWriterService();
 
+    public static ConsoleWriterService getInstance() {
+        return INSTANCE;
+    }
+
+    public static final DBConfiguration DB_CONFIG = DBConfiguration.getInstance();
     /**
      * The ANSI escape code for red text.
      */
@@ -28,7 +35,7 @@ public class ConsoleWriterService {
      *
      * @param strings the strings to print
      */
-    public static void printStrings(String... strings) {
+    public void printStrings(String... strings) {
         if (strings.length == 0) {
             return;
         }
@@ -38,29 +45,13 @@ public class ConsoleWriterService {
     }
 
     /**
-     * Prints a list of readings to the console, with each reading on a new line.
+     * Prints a list to the console, with each string on a new line.
      *
-     * @param readings the readings to print
+     * @param strings the strings to print
      */
-    public static void printReadings(List<Reading> readings) {
-        for (var reading : readings) {
-            printStrings(
-                    "Счетчик: " + reading.getType() +
-                            "\nНомер договора: " + reading.getContractNumber() +
-                            "\nЗначение счетчика: " + reading.getValue() +
-                            "\nМесяц подачи: " + MONTHS.get(reading.getMonth() - 1) + " (" + reading.getMonth() + ")\n"
-            );
-        }
-    }
-
-    /**
-     * Prints a list of logs to the console, with each log on a new line.
-     *
-     * @param logs the logs to print
-     */
-    public static void printLogs(Queue<Log> logs) {
-        for (var log : logs) {
-            printStrings(log.getDate() + " " + log.getAction());
+    public void printList(List<String> strings) {
+        for (String string : strings) {
+            printStrings(string);
         }
     }
 
@@ -69,7 +60,7 @@ public class ConsoleWriterService {
      *
      * @param strings the errors to print
      */
-    public static void printErrors(String... strings) {
+    public void printErrors(String... strings) {
         if (strings.length == 0) {
             return;
         }
@@ -79,16 +70,39 @@ public class ConsoleWriterService {
     }
 
     /**
-     * Prints a list of strings with their indices to the console, with each string on a new line and its index in parentheses.
+     * Prints the list of roles to the console, with each role on a new line, along with its ID.
      *
-     * @param strings the strings to print
+     * @throws SQLException if there is an error while executing the SQL query
      */
-    public static void printStringsWithIndex(List<String> strings) {
-        if (strings.isEmpty()) {
-            return;
-        }
-        for (int i = 0; i < strings.size(); i++) {
-            System.out.println((i + 1) + ". " + strings.get(i));
+    public void printRolesWithId() throws SQLException {
+        String sql = "SELECT * FROM service.roles;";
+        ResultSet rs = DB_CONFIG.getStatement().executeQuery(sql);
+        while (rs.next()) {
+            printStrings(rs.getString("id") + ". " + rs.getString("name"));
         }
     }
+
+    /**
+     * Prints the list of reading types to the console, with each type on a new line, along with its ID.
+     *
+     * @throws SQLException if there is an error while executing the SQL query
+     */
+    public void printTypesWithId() throws SQLException {
+        String sql = "SELECT * FROM service.reading_types;";
+        ResultSet rs = DB_CONFIG.getStatement().executeQuery(sql);
+        while (rs.next()) {
+            printStrings(rs.getString("id") + ". " + rs.getString("name"));
+        }
+    }
+
+    /**
+     * Prints the list of months to the console, with each month on a new line, along with its index (starting from 1).
+     */
+    public void printMonthsWithId() {
+        List<Month> months = Arrays.asList(Month.values());
+        for (int i = 0; i < months.size(); i++) {
+            printStrings((i + 1) + ". " + months.get(i));
+        }
+    }
+
 }

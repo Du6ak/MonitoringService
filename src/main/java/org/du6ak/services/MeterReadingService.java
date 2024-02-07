@@ -3,209 +3,141 @@ package org.du6ak.services;
 import lombok.Data;
 import org.du6ak.models.Log;
 import org.du6ak.models.Reading;
+import org.du6ak.models.ReadingType;
 import org.du6ak.models.User;
+import org.du6ak.services.exceptions.AlreadyExistsException;
+import org.du6ak.services.exceptions.DataNotFoundException;
+import org.du6ak.services.exceptions.UserNotFoundException;
+import org.du6ak.services.out.menu.ReadingMenu;
 
+import java.time.Month;
 import java.util.*;
-
-import static org.du6ak.services.LogService.addLog;
-import static org.du6ak.services.UserService.getUsers;
-import static org.du6ak.services.out.menu.ReadingMenu.*;
 
 /**
  * This class provides services for managing meter readings.
  */
 @Data
 public class MeterReadingService {
-    /**
-     * A list of supported meter reading types.
-     */
-    private static List<String> readingTypes = new ArrayList<>();
 
-    static {
-        readingTypes.add("холодная вода");
-        readingTypes.add("горячая вода");
-        readingTypes.add("электричество");
+    private static final MeterReadingService INSTANCE = new MeterReadingService();
+
+    public static MeterReadingService getInstance() {
+        return INSTANCE;
     }
 
     /**
-     * A list of month names.
+     * A menu for managing meter readings.
      */
-    public static final List<String> MONTHS = List.of("январь", "февраль", "март", "апрель", "май", "июнь", "июль", "август", "сентябрь", "октябрь", "ноябрь", "декабрь");
+    private ReadingMenu readingMenu = ReadingMenu.getInstance();
 
     /**
-     * Returns a list of supported meter reading types.
-     *
-     * @return a list of supported meter reading types
+     * A log of user actions.
      */
-    public static List<String> getReadingTypes() {
-        return readingTypes;
-    }
+    private Log log = Log.getInstance();
 
     /**
-     * Adds a meter reading type to the list of supported types.
-     *
-     * @param type the meter reading type to add
+     * A user database.
      */
-    public static void addType(String type) {
-        readingTypes.add(type);
-    }
+    private User user = User.getInstance();
 
     /**
-     * Removes a meter reading type from the list of supported types.
-     *
-     * @param type the meter reading type to remove
+     * A database of meter readings.
      */
-    public static void removeType(String type) {
-        readingTypes.remove(type);
-    }
+    private Reading reading = Reading.getInstance();
 
     /**
-     * Adds a meter reading to the system.
-     *
-     * @param user the user submitting the reading
-     * @throws Exception if there is an error processing the reading
+     * A database of meter reading types.
      */
-    public static void sendReadings(User user) throws Exception {
-        String type = getTypeOfReading(); // get the meter reading type
-        Long contractNumber = getContractNumber(); // get the contract number
-        int value = getValue(); // get the reading value
-        int month = getMonthOfReading(); // get the month of the reading
-        Reading newReading = new Reading(type, contractNumber, value, month); // create the new reading
-        if (Objects.isNull(user)) {
-            throw new Exception("Ошибка! user not found");
-        }
-        Set<Reading> readings = getUsers().getOrDefault(user, new HashSet<>());
-        if (!readings.contains(newReading)) {
-            readings.add(newReading);
-            addLog(user, new Log("отправил показания (" + type + ")"));
+    private ReadingType readingType = ReadingType.getInstance();
+
+    /**
+     * Adds a meter reading to the database.
+     *
+     * @param username       the username of the user
+     * @param typeId         the ID of the meter reading type
+     * @param contractNumber the contract number of the meter
+     * @param value          the value of the reading
+     * @param monthNumber    the month of the reading
+     * @throws UserNotFoundException  if the username is not found in the user database
+     * @throws AlreadyExistsException if the reading already exists in the database
+     */
+    public void sendReadings(String username, int typeId, int contractNumber, int value, int monthNumber) throws Exception {
+        if (!username.isEmpty() && user.isContains(username)) {
+            if (reading.isContains(user.getUserId(username), typeId, contractNumber, value, monthNumber)) {
+                throw new AlreadyExistsException();
+            }
+            reading.addReading(user.getUserId(username), typeId, contractNumber, value, monthNumber);
+            log.addLog(user.getUserId(username), "внёс данные за " + monthNumber + " месяц по договору " + contractNumber);
         } else {
-            throw new Exception("Вы уже отправляли показания со счетчика " + type + " этом месяце!");
+            throw new UserNotFoundException();
         }
     }
 
     /**
-     * Returns the latest meter reading for a given user and meter type.
+     * Returns the latest meter reading for a user and meter type.
      *
-     * @param user the user to retrieve readings for
+     * @param username the username of the user
+     * @param typeId   the ID of the meter reading type
      * @return the latest meter reading for the user and meter type
-     * @throws Exception if there is an error retrieving the readings
+     * @throws UserNotFoundException if the username is not found in the user database
+     * @throws DataNotFoundException if no reading exists for the user and meter type
      */
-    public static Reading getActualReadings(User user) throws Exception {
-        if (user != null) {
-            String type = getTypeOfReading(); // get the meter reading type
-            Set<Reading> readings = getUsers().getOrDefault(user, new HashSet<>());
-            if (readings.isEmpty()) {
-                throw new Exception("В базе нет показаний по счетчику " + type + "!");
-            } else {
-                Reading latestReading = null;
-                for (Reading reading : readings) {
-                    if (reading.getType().equals(type) && latestReading == null) {
-                        latestReading = reading;
-                    } else if (reading.getType().equals(type) && reading.getMonth() > latestReading.getMonth()) {
-                        latestReading = reading;
-                    }
-                }
-                if (latestReading == null) {
-                    throw new Exception("В базе нет ваших показаний по счетчику " + type + "!");
-                } else {
-                    addLog(user, new Log("посмотрел свои актуальные показания"));
-                    return latestReading;
-                }
+    public String getActualReadings(String username, int typeId) throws Exception {
+        if (!username.isEmpty() && user.isContains(username)) {
+            String latestReading = reading.getReading(user.getUserId(username), typeId);
+            if (latestReading == null) {
+                throw new DataNotFoundException();
             }
+            log.addLog(user.getUserId(username), "посмотрел свои актуальные показания по счетчику " + readingType.getTypeName(typeId));
+            return "\nПользователь: " + username +
+                    "\nТип счетчика: " + readingType.getTypeName(typeId) +
+                    latestReading;
         } else {
-            throw new Exception("Ошибка! user not found");
+            throw new UserNotFoundException();
         }
     }
 
     /**
-     * Returns the meter readings for a given month and user.
+     * Returns a list of meter readings for a user and month.
      *
-     * @param user the user to retrieve readings for
-     * @return the meter readings for the given month and user
-     * @throws Exception if there is an error retrieving the readings
+     * @param username    the username of the user
+     * @param typeId      the ID of the meter reading type
+     * @param monthNumber the month number
+     * @return a list of meter readings for the user and month
+     * @throws UserNotFoundException if the username is not found in the user database
+     * @throws DataNotFoundException if no readings exist for the user and month
      */
-    public static List<Reading> getMonthReadings(User user) throws Exception {
-        if (user != null) {
-            int month = getMonthOfReading(); // get the month of the readings
-            Set<Reading> readings = getUsers().getOrDefault(user, new HashSet<>());
-            if (readings.isEmpty()) {
-                throw new Exception("В базе нет ваших показаний за " + MONTHS.get(month - 1) + " (" + month + ")!");
+    public List<String> getMonthReadings(String username, int typeId, int monthNumber) throws Exception {
+        if (!username.isEmpty() && user.isContains(username)) {
+            List<String> monthReading = reading.getReadings(username, user.getUserId(username), typeId, monthNumber);
+            if (monthReading.isEmpty()) {
+                throw new DataNotFoundException();
             }
-            List<Reading> readingList = new ArrayList<>();
-            for (Reading reading : readings) {
-                if (reading.getMonth() == month) {
-                    readingList.add(reading);
-                }
-            }
-            if (readingList.isEmpty()) {
-                throw new Exception("В базе нет ваших показаний за " + MONTHS.get(month - 1) + " (" + month + ")!");
-            }
-            addLog(user, new Log("посмотрел свои показания за " + MONTHS.get(month - 1)));
-            return readingList;
-
+            log.addLog(user.getUserId(username), "посмотрел свои показания за " + Month.of(monthNumber).name());
+            return monthReading;
         } else {
-            throw new Exception("Ошибка! user not found");
+            throw new UserNotFoundException();
         }
     }
 
     /**
-     * Returns a user's meter reading history.
+     * Returns a list of meter readings for a user.
      *
-     * @param user the user to retrieve the history for
-     * @return the user's meter reading history
-     * @throws Exception if there is an error retrieving the history
+     * @param username the username of the user
+     * @return a list of meter readings for the user
+     * @throws UserNotFoundException if the username is not found in the user database
+     * @throws DataNotFoundException if no readings exist for the user
      */
-    public static List<Reading> getHistoryReadings(User user) throws Exception {
-        if (user != null) {
-            List<Reading> readings = new ArrayList<>(getUsers().getOrDefault(user, new HashSet<>()));
-            if (readings.isEmpty()) {
-                throw new Exception("Ваша история подачи показаний пуста!");
-            } else {
-                addLog(user, new Log("посмотрел свою историю подачи показаний"));
-                return readings;
+    public List<String> getHistoryReadings(String username) throws Exception {
+        if (!username.isEmpty() && user.isContains(username)) {
+            List<String> historyReading = reading.getReadings(username, user.getUserId(username));
+            if (historyReading.isEmpty()) {
+                throw new DataNotFoundException();
             }
+            log.addLog(user.getUserId(username), "посмотрел историю показаний");
+            return historyReading;
         } else {
-            throw new Exception("Ошибка! user not found");
-        }
-    }
-
-    /**
-     * Displays a menu of meter reading types and returns the user's selection.
-     *
-     * @return the user's selection
-     * @throws Exception if there is an error displaying the menu
-     */
-    public static String getTypeOfReading() throws Exception {
-        int typeIndex = showReadingMenu() - 1;
-        if (typeIndex >= 0 && typeIndex < readingTypes.size()) {
-            return readingTypes.get(typeIndex);
-        } else {
-            throw new Exception("Неверный номер операции!");
-        }
-    }
-
-    /**
-     * Checks if a user is an admin.
-     *
-     * @param user the user to check
-     * @return true if the user is an admin, false otherwise
-     */
-    public static boolean isAdmin(User user) {
-        return user != null && user.isAdmin();
-    }
-
-    /**
-     * Displays a menu of month options and returns the user's selection.
-     *
-     * @return the user's selection
-     * @throws Exception if there is an error displaying the menu
-     */
-    public static int getMonthOfReading() throws Exception {
-        int monthNumber = getMonth();
-        if (monthNumber >= 1 && monthNumber <= 12) {
-            return monthNumber;
-        } else {
-            throw new Exception("Неверный номер месяца!");
+            throw new UserNotFoundException();
         }
     }
 }
